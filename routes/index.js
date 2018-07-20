@@ -13,6 +13,8 @@ router.get('/api/group/:group_name', db.ViewGroup);
 router.post('/api/update-profile', db.UserPersonalInfo);
 router.post('/api/add-user-group', db.addUserToGroup);
 router.get('/api/view-group/:group_id', db.viewGroupUser);
+router.post('/api/remove-user', db.removeUser);
+router.post('/api/add-user', db.addUser);
 
 module.exports = router;
 
