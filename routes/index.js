@@ -15,7 +15,17 @@ router.post('/api/add-user-group', db.addUserToGroup);
 router.get('/api/view-group/:group_id', db.viewGroupUser);
 router.post('/api/remove-user', db.removeUser);
 router.post('/api/add-user', db.addUser);
-
+router.post('/api/create-module', db.CreateModule);
+router.post('/api/add-module', db.AddModuleToGroup);
+router.post('/api/purchase-module', db.PurchaseModule);
+router.post('/api/delete-module', db.DeleteModuleFromGroup);
+router.get('/api/module/:module_id', db.ViewModule);
+router.get('/api/all-modules', db.ModuleMarketPlace);
+router.get('/api/company-module/:user_id', db.CompanyModuleList);
+router.post('/api/add-jobrole', db.AddJobRole);
+router.post('/api/add-joblevel', db.AddJobLevel);
+router.post('/api/update-role', db.UpdateJobRole);
+router.post('/api/update-level', db.UpdateJobLevel);
 module.exports = router;
 
 

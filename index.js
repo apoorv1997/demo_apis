@@ -26,7 +26,18 @@ module.exports = {
     addUserToGroup: addUserToGroup,
     viewGroupUser: viewGroupUser,
     removeUser: removeUser,
-    addUser: addUser
+    addUser: addUser,
+    CreateModule: CreateModule,
+    AddModuleToGroup: AddModuleToGroup,
+    PurchaseModule: PurchaseModule,
+    DeleteModuleFromGroup: DeleteModuleFromGroup,
+    ViewModule: ViewModule,
+    ModuleMarketPlace: ModuleMarketPlace,
+    CompanyModuleList: CompanyModuleList,
+    AddJobRole: AddJobRole,
+    AddJobLevel: AddJobLevel,
+    UpdateJobLevel: UpdateJobLevel,
+    UpdateJobRole: UpdateJobRole
 };
 
 
@@ -73,17 +84,6 @@ function getUser(req,res,next) {
     }).catch(function(err) {
         return next(err);
     })
-    //query='SELECT data.user_personal_data.first_name, data.user_personal_data.last_name, data.user_personal_data.company_email_id, data.user_norm_data.Employment_status, (SELECT data.job_role.job_role FROM data.job_role WHERE data.job_role.job_role_id = data.user_norm_data.job_role_id), data.user_personal_data.user_id FROM data.user_personal_data INNER JOIN data.user_norm_data ON data.user_personal_data.user_id = data.user_norm_data.user_id WHERE data.user_personal_data.company_id = %s AND data.user_norm_data.status_marker = "active"'
-    /*db.oneOrNone('select * from user_personal_data where user_id=$1',username).then(function(data) {
-        res.status(200).json({
-            status:'Success',
-            message:'User Found',
-            data:data
-        });
-    })
-    .catch(function(err) {
-        return next(err);
-    })*/
 };
 
 function addUser(req,res,next) {
@@ -249,3 +249,163 @@ function removeUser(req,res,next) {
         return next(err);
     })
 };
+
+
+function CreateModule(req,res,next) {
+    db.oneOrNone('insert into module_table(module_name,module_picture_url,module_cost,module_version,module_launch_date,module_duration,module_description_short,module_description,game_type,last_updated,total_tests_taken,validity,reliability)' +
+                    'values(${module_name},${module_picture_url},${module_cost},${module_version},${module_launch_date},${module_duration},${module_description_short},${module_description},${game_type},${last_updated},${total_tests_taken},${validity},${reliability})',req.body)
+    .then(function(data) {
+        res.status(200).json({
+            status:'Success',
+            message:'Module Created'
+        })
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+function AddModuleToGroup(req,res,next) {
+    db.oneOrNone('insert into group_and_module(group_id,module_id) values(${group_id},${module_id})',req.body)
+    .then(function(data) {
+        res.status(200).json({
+            status:'Success',
+            message:'Module added successfulyy to group'
+        })
+    })
+};
+
+function PurchaseModule(req,res,next) {
+    db.oneOrNone('insert into company_purchase_module(company_id,module_purchase_date,module_id,module_purchase_cost)' +
+                'values(${company_id},${module_purchase_date},${module_id},${module_purchase_cost})',req.body)
+    .then(function(data) {
+        res.status(200).json({
+            status:'Success',
+            message:'Module purchased successfully'
+        });
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+function DeleteModuleFromGroup(req,res,next) {
+    db.oneOrNone('delete from group_and_module where group_id=$1 and module_id=$2',req.body.group_id,req.body.module_id)
+    .then(function() {
+        res.status(200).json({
+            status:'Success',
+            message:'module deleted successfully from group'
+        });
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+
+function ViewModule(req,res,next) {
+    db.oneOrNone('select * from module_table where module_id = $1',req.params.module_id)
+    .then(function(data) {
+        if(data!=null) {
+            res.status(200).json({
+                status:'success',
+                message:'module details found',
+                data:data
+            });
+        } else {
+            res.status(500).json({
+                status:'failed',
+                message:'module not found'
+            });
+        }
+    }).catch(function(err) {
+        return next(err);
+    })    
+};
+
+function ModuleMarketPlace(req,res,next) {
+    db.oneOrNone('select module_id, module_name, module_description_short, module_duration from module_table')
+    .then(function(data) {
+        if(data!=null) {
+            res.status(200).json({
+                status:'success',
+                message:'modules retrieved successfully',
+                data:data
+            });
+        } else {
+            res.status(500).json({
+                status:'failed',
+                message:'no modules found'
+            });
+        }
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+function CompanyModuleList(req,res,next) {
+    db.oneOrNone('SELECT company_id FROM user_norm_data WHERE user_id = $1', req.params.user_id)
+    .then(function(data) {
+        db.oneOrNone('SELECT module_table.module_id, module_table.module_name, module_table.module_description_short, module_table.module_duration FROM module_table INNER JOIN company_purchase_module ON company_purchase_module.module_id = module_table.module_id  WHERE company_purchase_module.company_id = $1',data.company_id)
+        .then(function(data) {
+            res.status(200).json({
+                status:'success',
+                message:'company modules found',
+                data:data
+            });
+        }).catch(function(err) {
+            return next(err);
+        })
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+
+function AddJobRole(req,res,next) {
+    db.oneOrNone('insert into job_role(job_role,company_id) values(${job_role},${company_id})', req.body)
+    .then(function() {
+        res.status(200).json({
+            status:'success',
+            message:'job role added successfully'
+        });
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+function AddJobLevel(req,res,next) {
+    db.oneOrNone('insert into job_level(job_level,company_id) values(${job_level},${company_id})',req.body)
+    .then(function() {
+        res.status(200).json({
+            status:'success',
+            message:'job level added successfully'
+        });
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+
+function UpdateJobRole(req,res,next) {
+    db.oneOrNone('update job_role set job_role=${updated_job_role} where job_role_id=${job_role_id}',req.body)
+    .then(function() {
+        res.status(200).json({
+            status:'success',
+            message:'job role updated successfully'
+        });
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+function UpdateJobLevel(req,res,next) {
+    db.oneOrNone('update job_level set job_level=${updated_job_level} where job_level_id=${job_level_id}',req.body)
+    .then(function() {
+        res.status(200).json({
+            status:'success',
+            message:'job level updated successfully'
+        });
+    }).catch(function(err) {
+        return next(err);
+    })
+};
+
+
